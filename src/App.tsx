@@ -1,5 +1,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
 import { useGameStore } from './store/gameStore'
+import { startAmbient, stopAmbient } from './utils/ambientMusic'
 import ShapeQuiz from './components/ShapeQuiz'
 import ColourQuiz from './components/ColourQuiz'
 import ShapeTrace from './components/ShapeTrace'
@@ -49,6 +51,20 @@ function ModeSelect() {
 
 export default function App() {
   const { phase, mode } = useGameStore()
+  const [musicOn, setMusicOn] = useState(true)
+  const musicOnRef = useRef(true)
+
+  const toggleMusic = () => {
+    if (musicOn) { stopAmbient(); setMusicOn(false); musicOnRef.current = false }
+    else         { startAmbient(); setMusicOn(true);  musicOnRef.current = true  }
+  }
+
+  useEffect(() => {
+    startAmbient()
+    const unlock = () => { if (musicOnRef.current) startAmbient() }
+    document.addEventListener('pointerdown', unlock, { once: true })
+    return () => document.removeEventListener('pointerdown', unlock)
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-white flex flex-col items-center px-4 py-8 gap-6">
@@ -57,9 +73,15 @@ export default function App() {
         <h1 className="text-lg font-extrabold text-purple-500 tracking-tight">
           🎨 Colour & Shape Sparks
         </h1>
-        {phase !== 'idle' && (
-          <span className="text-xs text-gray-400 capitalize">{mode} mode</span>
-        )}
+        <div className="flex items-center gap-2">
+          {phase !== 'idle' && (
+            <span className="text-xs text-gray-400 capitalize">{mode} mode</span>
+          )}
+          <button onClick={toggleMusic} className="text-lg leading-none text-gray-400 hover:text-purple-400 transition-colors"
+            title={musicOn ? 'Mute music' : 'Play music'}>
+            {musicOn ? '🔊' : '🔇'}
+          </button>
+        </div>
       </header>
 
       <div className="w-full flex-1 flex flex-col items-center justify-start">
