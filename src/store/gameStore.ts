@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { SHAPES } from '../data/shapes'
 import { COLOURS } from '../data/colours'
 
-export type Mode  = 'shapes' | 'colours'
+export type Mode  = 'shapes' | 'colours' | 'challenge'
 export type Phase = 'idle' | 'quiz' | 'trace' | 'summary'
 
 const SESSION_SIZE = 10

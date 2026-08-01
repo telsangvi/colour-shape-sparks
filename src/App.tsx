@@ -4,6 +4,7 @@ import { useGameStore } from './store/gameStore'
 import { startAmbient, stopAmbient } from './utils/ambientMusic'
 import ShapeQuiz from './components/ShapeQuiz'
 import ColourQuiz from './components/ColourQuiz'
+import ChallengeQuiz from './components/ChallengeQuiz'
 import ShapeTrace from './components/ShapeTrace'
 import Summary from './components/Summary'
 import './index.css'
@@ -43,6 +44,17 @@ function ModeSelect() {
           <span className="text-4xl">🌈</span>
           <span>Colours</span>
           <span className="text-sm font-semibold opacity-80">Learn red, blue, green & more</span>
+        </motion.button>
+
+        <motion.button
+          whileTap={{ scale: 0.96 }}
+          whileHover={{ scale: 1.02 }}
+          onClick={() => startSession('challenge')}
+          className="bg-gradient-to-r from-orange-500 to-pink-500 hover:from-orange-600 hover:to-pink-600 text-white font-extrabold py-6 rounded-3xl text-xl shadow-lg transition-all flex flex-col items-center gap-1"
+        >
+          <span className="text-4xl">🔥</span>
+          <span>Challenge</span>
+          <span className="text-sm font-semibold opacity-80">Mix of all 3 — can you beat it?</span>
         </motion.button>
       </div>
     </motion.div>
@@ -87,8 +99,9 @@ export default function App() {
       <div className="w-full flex-1 flex flex-col items-center justify-start">
         <AnimatePresence mode="wait">
           {phase === 'idle'    && <ModeSelect key="idle" />}
-          {phase === 'quiz'    && mode === 'shapes'  && <ShapeQuiz  key={`sq-${useGameStore.getState().currentIndex}`} />}
-          {phase === 'quiz'    && mode === 'colours' && <ColourQuiz key={`cq-${useGameStore.getState().currentIndex}`} />}
+          {phase === 'quiz'    && mode === 'shapes'    && <ShapeQuiz     key={`sq-${useGameStore.getState().currentIndex}`} />}
+          {phase === 'quiz'    && mode === 'colours'   && <ColourQuiz    key={`cq-${useGameStore.getState().currentIndex}`} />}
+          {phase === 'quiz'    && mode === 'challenge' && <ChallengeQuiz key={`ch-${useGameStore.getState().currentIndex}`} />}
           {phase === 'trace'   && <ShapeTrace key={`trace-${useGameStore.getState().currentIndex}`} />}
           {phase === 'summary' && <Summary key="summary" />}
         </AnimatePresence>
