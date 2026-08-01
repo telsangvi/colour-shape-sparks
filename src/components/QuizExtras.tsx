@@ -2,6 +2,24 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 export const TIMER_TOTAL = 12
 
+export function RealWorldToast({ text }: { text: string | null }) {
+  return (
+    <AnimatePresence>
+      {text && (
+        <motion.div
+          initial={{ y: 40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: 40, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 24 }}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white rounded-2xl shadow-xl px-5 py-3 text-sm font-bold text-gray-700 whitespace-nowrap"
+        >
+          💡 Did you know? {text}!
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
 export function TimerBar({ timeLeft }: { timeLeft: number }) {
   const pct   = timeLeft / TIMER_TOTAL
   const color = pct > 0.5 ? '#22C55E' : pct > 0.25 ? '#EAB308' : '#EF4444'

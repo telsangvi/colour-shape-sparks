@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { SHAPES } from '../data/shapes'
 import { COLOURS } from '../data/colours'
 
-export type Mode  = 'shapes' | 'colours' | 'challenge'
+export type Mode  = 'shapes' | 'colours' | 'challenge' | 'pattern' | 'spotter'
 export type Phase = 'idle' | 'quiz' | 'trace' | 'summary'
 
 const SESSION_SIZE = 10
@@ -52,8 +52,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
   streak:       0,
   maxStreak:    0,
 
-  startSession: (mode) =>
-    set({ mode, phase: 'quiz', session: shuffle(buildSession()), currentIndex: 0, score: 0, streak: 0, maxStreak: 0 }),
+  startSession: (mode) => {
+    if (mode === 'pattern' || mode === 'spotter') {
+      set({ mode, phase: 'quiz', session: [], currentIndex: 0, score: 0, streak: 0, maxStreak: 0 })
+    } else {
+      set({ mode, phase: 'quiz', session: shuffle(buildSession()), currentIndex: 0, score: 0, streak: 0, maxStreak: 0 })
+    }
+  },
 
   recordCorrect: () => set(s => {
     const newStreak = s.streak + 1

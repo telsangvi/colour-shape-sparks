@@ -5,6 +5,7 @@ import { useGameStore } from '../store/gameStore'
 import { SHAPES } from '../data/shapes'
 import { COLOURS } from '../data/colours'
 import { speak } from '../utils/speech'
+import { playTap, playCorrect, playWrong } from '../utils/sounds'
 import ShapeDisplay from './ShapeDisplay'
 import { TimerBar, StreakBadge, ComboFlash, getMilestone, TIMER_TOTAL } from './QuizExtras'
 
@@ -135,11 +136,13 @@ export default function ChallengeQuiz() {
 
   const handleSelect = (idx: number) => {
     if (selected !== null) return
+    playTap()
     const correct = idx === q.answerIndex
     setSelected(idx)
     setShowResult(true)
 
     if (correct) {
+      playCorrect()
       const newStreak = streak + 1
       recordCorrect()
       burst(newStreak)
@@ -148,6 +151,7 @@ export default function ChallengeQuiz() {
       const phrase = PHRASES[Math.floor(Math.random() * PHRASES.length)]
       speak(phrase, () => setTimeout(nextQuestion, 300))
     } else {
+      playWrong()
       resetStreak()
       speak('Try again!')
       setTimeout(() => { setSelected(null); setShowResult(false) }, 700)
@@ -198,6 +202,7 @@ export default function ChallengeQuiz() {
                 <motion.button
                   key={idx}
                   whileTap={selected === null ? { scale: 0.94 } : {}}
+                  onPointerDown={() => playTap()}
                   onClick={() => handleSelect(idx)}
                   disabled={selected !== null}
                   className={`rounded-2xl p-4 flex items-center justify-center transition-all duration-200 ${cls} disabled:cursor-default`}

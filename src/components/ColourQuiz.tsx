@@ -4,7 +4,8 @@ import confetti from 'canvas-confetti'
 import { useGameStore } from '../store/gameStore'
 import { COLOURS } from '../data/colours'
 import { speak } from '../utils/speech'
-import { TimerBar, StreakBadge, ComboFlash, getMilestone, TIMER_TOTAL } from './QuizExtras'
+import { playTap, playCorrect, playWrong } from '../utils/sounds'
+import { TimerBar, StreakBadge, ComboFlash, getMilestone, TIMER_TOTAL, RealWorldToast } from './QuizExtras'
 
 const CORRECT_PHRASES = [
   (c: string) => `Yay! That's ${c}!`,
@@ -16,6 +17,8 @@ const CORRECT_PHRASES = [
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5)
 }
+
+function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)] }
 
 function burst(streak: number) {
   if (streak >= 5) {
@@ -38,10 +41,11 @@ export default function ColourQuiz() {
     const others = COLOURS.filter(c => c.id !== colour.id)
     return shuffle([colour, ...shuffle(others).slice(0, 3)])
   })
-  const [selected, setSelected]     = useState<string | null>(null)
-  const [showResult, setShowResult] = useState(false)
-  const [timeLeft, setTimeLeft]     = useState(TIMER_TOTAL)
-  const [combo, setCombo]           = useState<string | null>(null)
+  const [selected, setSelected]         = useState<string | null>(null)
+  const [showResult, setShowResult]     = useState(false)
+  const [timeLeft, setTimeLeft]         = useState(TIMER_TOTAL)
+  const [combo, setCombo]               = useState<string | null>(null)
+  const [toastText, setToastText]       = useState<string | null>(null)
 
   useEffect(() => { speak('What colour is this?') }, [])
 
@@ -58,19 +62,25 @@ export default function ColourQuiz() {
 
   const handleSelect = (colourId: string) => {
     if (selected) return
+    playTap()
     const correct = colourId === colour.id
     setSelected(colourId)
     setShowResult(true)
 
     if (correct) {
+      playCorrect()
       const newStreak = streak + 1
       recordCorrect()
       burst(newStreak)
       const milestone = getMilestone(newStreak)
       if (milestone) { setCombo(milestone); setTimeout(() => setCombo(null), 1200) }
+      const realWorldItem = pick(colour.realWorld)
+      setToastText(`${colour.name} things include ${realWorldItem}`)
+      setTimeout(() => setToastText(null), 2000)
       const phrase = CORRECT_PHRASES[Math.floor(Math.random() * CORRECT_PHRASES.length)](colour.name)
       speak(phrase, () => setTimeout(nextQuestion, 300))
     } else {
+      playWrong()
       resetStreak()
       speak('Try again!')
       setTimeout(() => { setSelected(null); setShowResult(false) }, 700)
@@ -79,6 +89,7 @@ export default function ColourQuiz() {
 
   return (
     <div className="relative w-full max-w-sm mx-auto">
+      <RealWorldToast text={toastText} />
       <ComboFlash text={combo} />
       <AnimatePresence mode="wait">
         <motion.div
@@ -126,6 +137,7 @@ export default function ColourQuiz() {
                 <motion.button
                   key={opt.id}
                   whileTap={!selected ? { scale: 0.94 } : {}}
+                  onPointerDown={() => playTap()}
                   onClick={() => handleSelect(opt.id)}
                   disabled={!!selected}
                   className={`rounded-2xl p-4 flex items-center gap-3 transition-all duration-200 shadow-sm ${cls} disabled:cursor-default`}

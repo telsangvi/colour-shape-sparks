@@ -5,8 +5,9 @@ import { useGameStore } from '../store/gameStore'
 import { SHAPES } from '../data/shapes'
 import { COLOURS } from '../data/colours'
 import { speak } from '../utils/speech'
+import { playTap, playCorrect, playWrong } from '../utils/sounds'
 import ShapeDisplay from './ShapeDisplay'
-import { TimerBar, StreakBadge, ComboFlash, getMilestone, TIMER_TOTAL } from './QuizExtras'
+import { TimerBar, StreakBadge, ComboFlash, getMilestone, TIMER_TOTAL, RealWorldToast } from './QuizExtras'
 
 const CORRECT_PHRASES = [
   (s: string) => `Yay! That's a ${s}!`,
@@ -18,6 +19,8 @@ const CORRECT_PHRASES = [
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5)
 }
+
+function pick<T>(arr: T[]): T { return arr[Math.floor(Math.random() * arr.length)] }
 
 function burst(streak: number) {
   if (streak >= 5) {
@@ -41,10 +44,11 @@ export default function ShapeQuiz() {
     const others = SHAPES.filter(s => s.id !== shape.id)
     return shuffle([shape, ...shuffle(others).slice(0, 3)])
   })
-  const [selected, setSelected]     = useState<string | null>(null)
-  const [showResult, setShowResult] = useState(false)
-  const [timeLeft, setTimeLeft]     = useState(TIMER_TOTAL)
-  const [combo, setCombo]           = useState<string | null>(null)
+  const [selected, setSelected]         = useState<string | null>(null)
+  const [showResult, setShowResult]     = useState(false)
+  const [timeLeft, setTimeLeft]         = useState(TIMER_TOTAL)
+  const [combo, setCombo]               = useState<string | null>(null)
+  const [toastText, setToastText]       = useState<string | null>(null)
 
   useEffect(() => { speak('What shape is this?') }, [])
 
@@ -61,19 +65,25 @@ export default function ShapeQuiz() {
 
   const handleSelect = (shapeId: string) => {
     if (selected) return
+    playTap()
     const correct = shapeId === shape.id
     setSelected(shapeId)
     setShowResult(true)
 
     if (correct) {
+      playCorrect()
       const newStreak = streak + 1
       recordCorrect()
       burst(newStreak)
       const milestone = getMilestone(newStreak)
       if (milestone) { setCombo(milestone); setTimeout(() => setCombo(null), 1200) }
+      const realWorldItem = pick(shape.realWorld)
+      setToastText(`A ${shape.name} looks like ${realWorldItem}`)
+      setTimeout(() => setToastText(null), 2000)
       const phrase = CORRECT_PHRASES[Math.floor(Math.random() * CORRECT_PHRASES.length)](shape.name)
       speak(phrase, () => setPhase('trace'))
     } else {
+      playWrong()
       resetStreak()
       speak('Try again!')
       setTimeout(() => { setSelected(null); setShowResult(false) }, 700)
@@ -82,6 +92,7 @@ export default function ShapeQuiz() {
 
   return (
     <div className="relative w-full max-w-sm mx-auto">
+      <RealWorldToast text={toastText} />
       <ComboFlash text={combo} />
       <AnimatePresence mode="wait">
         <motion.div
@@ -123,6 +134,7 @@ export default function ShapeQuiz() {
                 <motion.button
                   key={opt.id}
                   whileTap={!selected ? { scale: 0.94 } : {}}
+                  onPointerDown={() => playTap()}
                   onClick={() => handleSelect(opt.id)}
                   disabled={!!selected}
                   className={`rounded-2xl p-3 flex flex-col items-center gap-2 transition-all duration-200 ${cls} disabled:cursor-default`}
