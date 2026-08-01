@@ -32,12 +32,15 @@ interface GameStore {
   session:      QuizItem[]
   currentIndex: number
   score:        number
+  streak:       number
+  maxStreak:    number
 
-  startSession: (mode: Mode) => void
-  nextQuestion: () => void
+  startSession:  (mode: Mode) => void
+  nextQuestion:  () => void
   recordCorrect: () => void
-  setPhase:     (phase: Phase) => void
-  goIdle:       () => void
+  resetStreak:   () => void
+  setPhase:      (phase: Phase) => void
+  goIdle:        () => void
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -46,11 +49,18 @@ export const useGameStore = create<GameStore>((set, get) => ({
   session:      [],
   currentIndex: 0,
   score:        0,
+  streak:       0,
+  maxStreak:    0,
 
   startSession: (mode) =>
-    set({ mode, phase: 'quiz', session: shuffle(buildSession()), currentIndex: 0, score: 0 }),
+    set({ mode, phase: 'quiz', session: shuffle(buildSession()), currentIndex: 0, score: 0, streak: 0, maxStreak: 0 }),
 
-  recordCorrect: () => set(s => ({ score: s.score + 1 })),
+  recordCorrect: () => set(s => {
+    const newStreak = s.streak + 1
+    return { score: s.score + 1, streak: newStreak, maxStreak: Math.max(s.maxStreak, newStreak) }
+  }),
+
+  resetStreak: () => set({ streak: 0 }),
 
   setPhase: (phase) => set({ phase }),
 
@@ -63,5 +73,5 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
   },
 
-  goIdle: () => set({ phase: 'idle', mode: null, session: [], currentIndex: 0, score: 0 }),
+  goIdle: () => set({ phase: 'idle', mode: null, session: [], currentIndex: 0, score: 0, streak: 0, maxStreak: 0 }),
 }))
