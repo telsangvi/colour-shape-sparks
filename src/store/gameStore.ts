@@ -32,6 +32,7 @@ interface GameStore {
   session:      QuizItem[]
   currentIndex: number
   score:        number
+  total:        number
   streak:       number
   maxStreak:    number
 
@@ -43,20 +44,25 @@ interface GameStore {
   goIdle:        () => void
 }
 
+const PATTERN_SIZE = 8
+const SPOTTER_SIZE = 6
+
 export const useGameStore = create<GameStore>((set, get) => ({
   mode:         null,
   phase:        'idle',
   session:      [],
   currentIndex: 0,
   score:        0,
+  total:        SESSION_SIZE,
   streak:       0,
   maxStreak:    0,
 
   startSession: (mode) => {
+    const total = mode === 'pattern' ? PATTERN_SIZE : mode === 'spotter' ? SPOTTER_SIZE : SESSION_SIZE
     if (mode === 'pattern' || mode === 'spotter') {
-      set({ mode, phase: 'quiz', session: [], currentIndex: 0, score: 0, streak: 0, maxStreak: 0 })
+      set({ mode, phase: 'quiz', session: [], currentIndex: 0, score: 0, total, streak: 0, maxStreak: 0 })
     } else {
-      set({ mode, phase: 'quiz', session: shuffle(buildSession()), currentIndex: 0, score: 0, streak: 0, maxStreak: 0 })
+      set({ mode, phase: 'quiz', session: shuffle(buildSession()), currentIndex: 0, score: 0, total, streak: 0, maxStreak: 0 })
     }
   },
 
@@ -78,5 +84,5 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }
   },
 
-  goIdle: () => set({ phase: 'idle', mode: null, session: [], currentIndex: 0, score: 0, streak: 0, maxStreak: 0 }),
+  goIdle: () => set({ phase: 'idle', mode: null, session: [], currentIndex: 0, score: 0, total: SESSION_SIZE, streak: 0, maxStreak: 0 }),
 }))

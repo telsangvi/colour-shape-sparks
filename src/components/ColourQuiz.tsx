@@ -46,6 +46,7 @@ export default function ColourQuiz() {
   const [timeLeft, setTimeLeft]         = useState(TIMER_TOTAL)
   const [combo, setCombo]               = useState<string | null>(null)
   const [toastText, setToastText]       = useState<string | null>(null)
+  const [wasWrong, setWasWrong]         = useState(false)
 
   useEffect(() => { speak('What colour is this?') }, [])
 
@@ -69,11 +70,13 @@ export default function ColourQuiz() {
 
     if (correct) {
       playCorrect()
-      const newStreak = streak + 1
-      recordCorrect()
-      burst(newStreak)
-      const milestone = getMilestone(newStreak)
-      if (milestone) { setCombo(milestone); setTimeout(() => setCombo(null), 1200) }
+      if (!wasWrong) {
+        const newStreak = streak + 1
+        recordCorrect()
+        burst(newStreak)
+        const milestone = getMilestone(newStreak)
+        if (milestone) { setCombo(milestone); setTimeout(() => setCombo(null), 1200) }
+      }
       const realWorldItem = pick(colour.realWorld)
       setToastText(`${colour.name} things include ${realWorldItem}`)
       setTimeout(() => setToastText(null), 2000)
@@ -81,6 +84,7 @@ export default function ColourQuiz() {
       speak(phrase, () => setTimeout(nextQuestion, 300))
     } else {
       playWrong()
+      setWasWrong(true)
       resetStreak()
       speak('Try again!')
       setTimeout(() => { setSelected(null); setShowResult(false) }, 700)

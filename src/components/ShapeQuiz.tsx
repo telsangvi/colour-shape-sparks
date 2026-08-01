@@ -49,6 +49,7 @@ export default function ShapeQuiz() {
   const [timeLeft, setTimeLeft]         = useState(TIMER_TOTAL)
   const [combo, setCombo]               = useState<string | null>(null)
   const [toastText, setToastText]       = useState<string | null>(null)
+  const [wasWrong, setWasWrong]         = useState(false)
 
   useEffect(() => { speak('What shape is this?') }, [])
 
@@ -72,11 +73,13 @@ export default function ShapeQuiz() {
 
     if (correct) {
       playCorrect()
-      const newStreak = streak + 1
-      recordCorrect()
-      burst(newStreak)
-      const milestone = getMilestone(newStreak)
-      if (milestone) { setCombo(milestone); setTimeout(() => setCombo(null), 1200) }
+      if (!wasWrong) {
+        const newStreak = streak + 1
+        recordCorrect()
+        burst(newStreak)
+        const milestone = getMilestone(newStreak)
+        if (milestone) { setCombo(milestone); setTimeout(() => setCombo(null), 1200) }
+      }
       const realWorldItem = pick(shape.realWorld)
       setToastText(`A ${shape.name} looks like ${realWorldItem}`)
       setTimeout(() => setToastText(null), 2000)
@@ -84,6 +87,7 @@ export default function ShapeQuiz() {
       speak(phrase, () => setPhase('trace'))
     } else {
       playWrong()
+      setWasWrong(true)
       resetStreak()
       speak('Try again!')
       setTimeout(() => { setSelected(null); setShowResult(false) }, 700)

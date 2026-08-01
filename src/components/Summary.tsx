@@ -11,8 +11,7 @@ function stars(pct: number) {
 }
 
 export default function Summary() {
-  const { score, session, maxStreak, mode, startSession, goIdle } = useGameStore()
-  const total   = session.length
+  const { score, total, maxStreak, mode, startSession, goIdle } = useGameStore()
   const pct     = Math.round((score / total) * 100)
   const starCount = stars(pct)
 

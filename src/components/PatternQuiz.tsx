@@ -146,6 +146,7 @@ export default function PatternQuiz() {
   const [showResult, setShowResult] = useState(false)
   const [timeLeft, setTimeLeft]     = useState(TIMER_TOTAL)
   const [combo, setCombo]           = useState<string | null>(null)
+  const [wasWrong, setWasWrong]     = useState(false)
 
   const q = questions[qIndex]
 
@@ -168,6 +169,7 @@ export default function PatternQuiz() {
   }, [selected, qIndex])  // eslint-disable-line react-hooks/exhaustive-deps
 
   function advanceOrEnd() {
+    setWasWrong(false)
     if (qIndex + 1 >= SESSION_LENGTH) {
       setPhase('summary')
     } else {
@@ -187,15 +189,18 @@ export default function PatternQuiz() {
 
     if (correct) {
       playCorrect()
-      const newStreak = streak + 1
-      recordCorrect()
-      burst(newStreak)
-      const milestone = getMilestone(newStreak)
-      if (milestone) { setCombo(milestone); setTimeout(() => setCombo(null), 1200) }
+      if (!wasWrong) {
+        const newStreak = streak + 1
+        recordCorrect()
+        burst(newStreak)
+        const milestone = getMilestone(newStreak)
+        if (milestone) { setCombo(milestone); setTimeout(() => setCombo(null), 1200) }
+      }
       const phrase = PHRASES[Math.floor(Math.random() * PHRASES.length)]
       speak(phrase, () => setTimeout(advanceOrEnd, 300))
     } else {
       playWrong()
+      setWasWrong(true)
       resetStreak()
       speak('Try again!')
       setTimeout(() => { setSelected(null); setShowResult(false) }, 700)
