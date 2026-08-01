@@ -74,7 +74,7 @@ export default function App() {
   useEffect(() => {
     startAmbient()
     const unlock = () => { if (musicOnRef.current) startAmbient() }
-    document.addEventListener('pointerdown', unlock, { once: true })
+    document.addEventListener('pointerdown', unlock)
     return () => document.removeEventListener('pointerdown', unlock)
   }, [])
 

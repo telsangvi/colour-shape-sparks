@@ -10,9 +10,11 @@ function getAudio(): HTMLAudioElement {
 }
 
 export function startAmbient() {
-  try { getAudio().play() } catch {}
+  const a = getAudio()
+  if (!a.paused) return
+  a.play().catch(() => {})
 }
 
 export function stopAmbient() {
-  try { getAudio().pause() } catch {}
+  getAudio().pause()
 }
