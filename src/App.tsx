@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useGameStore } from './store/gameStore'
 import { startAmbient, stopAmbient } from './utils/ambientMusic'
 import ShapeQuiz from './components/ShapeQuiz'
@@ -61,25 +61,61 @@ function ModeSelect() {
   )
 }
 
+function SplashScreen({ onStart }: { onStart: () => void }) {
+  return (
+    <motion.div
+      key="splash"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onStart}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-6 cursor-pointer
+        bg-gradient-to-b from-purple-100 via-pink-50 to-white select-none"
+    >
+      <motion.div
+        animate={{ scale: [1, 1.08, 1] }}
+        transition={{ repeat: Infinity, duration: 2 }}
+        className="text-8xl"
+      >
+        🎨
+      </motion.div>
+      <div className="text-center">
+        <h1 className="text-3xl font-extrabold text-purple-600">Colour & Shape Sparks</h1>
+        <p className="text-gray-400 mt-1 text-sm">for curious little minds</p>
+      </div>
+      <motion.div
+        animate={{ opacity: [1, 0.4, 1] }}
+        transition={{ repeat: Infinity, duration: 1.4 }}
+        className="text-purple-400 font-bold text-lg"
+      >
+        Tap anywhere to start!
+      </motion.div>
+    </motion.div>
+  )
+}
+
 export default function App() {
   const { phase, mode } = useGameStore()
+  const [started, setStarted] = useState(false)
   const [musicOn, setMusicOn] = useState(true)
   const musicOnRef = useRef(true)
+
+  const handleStart = () => {
+    setStarted(true)
+    startAmbient()
+  }
 
   const toggleMusic = () => {
     if (musicOn) { stopAmbient(); setMusicOn(false); musicOnRef.current = false }
     else         { startAmbient(); setMusicOn(true);  musicOnRef.current = true  }
   }
 
-  useEffect(() => {
-    startAmbient()
-    const unlock = () => { if (musicOnRef.current) startAmbient() }
-    document.addEventListener('pointerdown', unlock)
-    return () => document.removeEventListener('pointerdown', unlock)
-  }, [])
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-purple-50 via-pink-50 to-white flex flex-col items-center px-4 py-8 gap-6">
+      <AnimatePresence>
+        {!started && <SplashScreen onStart={handleStart} />}
+      </AnimatePresence>
+
       {/* Header */}
       <header className="w-full max-w-sm flex items-center justify-between">
         <h1 className="text-lg font-extrabold text-purple-500 tracking-tight">
